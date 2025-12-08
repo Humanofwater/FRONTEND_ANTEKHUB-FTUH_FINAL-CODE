@@ -1,0 +1,450 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===================
+   FILTERS HORIZONTAL STYLES
+=================== */
+.filters-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #7b1b2e;
+}
+
+.filter-group select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccccd1;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease;
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: #c41e3a;
+  box-shadow: 0 0 6px #feca1b;
+}
+
+@media (max-width: 600px) {
+  .filters-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  .filter-group {
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-image: url('img/fakultas-teknik-universitas-hasanuddin background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.header {
+    background-color: #F5F5F5;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 100;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-unhas {
+    height: 60px;
+    width: auto;
+}
+
+.logo-ikatek {
+    height: 60px;
+    width: auto;
+}
+
+.header-title {
+    color: #C41E3A;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.logout-btn {
+    background-color: transparent;
+    border: none;
+    color: #666;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    color: #C41E3A;
+    transform: scale(1.05);
+}
+
+.logout-icon {
+    width: 20px;
+    height: 20px;
+}
+
+
+.main-content {
+    padding: 40px 20px;
+    min-height: calc(100vh - 90px);
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* Remove separate group styles */
+.left-group,
+.center-group,
+.right-group {
+    display: block;
+    flex: none;
+    max-width: none;
+    min-width: auto;
+    gap: 0;
+    padding: 0;
+}
+
+.chart-container {
+    min-height: 350px; /* reduced min height for flexibility */
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    padding: 25px 35px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.16);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    transition: box-shadow 0.3s ease;
+}
+
+/* Adjust canvas size specifically inside chart containers */
+.chart-container canvas {
+    max-width: 100% !important;
+    max-height: 340px !important;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+}
+
+.chart-container:hover {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+.chart-title {
+    margin-bottom: 20px;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #7b1b2e;
+    text-align: center;
+    width: 100%;
+    letter-spacing: 0.02em;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    .chart-container {
+        min-height: 300px;
+        padding: 20px 25px;
+    }
+}
+
+.chart-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    padding: 25px 35px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.16);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 380px;
+    max-height: 460px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    transition: box-shadow 0.3s ease;
+}
+
+.chart-container:hover {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+.chart-container canvas {
+    max-width: 100% !important;
+    max-height: 340px !important;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+}
+
+.chart-title {
+    margin-bottom: 20px;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #7b1b2e;
+    text-align: center;
+    width: 100%;
+    letter-spacing: 0.02em;
+}
+
+/* Ensure all canvas elements stretch to full width and have consistent height */
+canvas {
+    width: 100% !important;
+    max-height: 350px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .main-content {
+        flex-direction: column;
+        padding: 20px 15px;
+    }
+    .left-group,
+    .center-group,
+    .right-group {
+        max-width: 100%;
+        flex: none;
+        min-width: auto;
+    }
+    .center-group {
+        align-items: stretch;
+    }
+}
+
+
+.tagline {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.tagline h2 {
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+}
+
+.menu-card {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 40px 50px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+.card-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.card-logo {
+    height: 70px;
+    width: auto;
+}
+
+.menu-title {
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.menu-btn {
+    background-color: #8B1538;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 18px 35px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.menu-btn:hover {
+    background-color: #A01B42;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.menu-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.btn-icon {
+    width: 30px;
+    height: 35px;
+    filter: brightness(0) invert(1);
+}
+
+@media (max-width: 768px) {
+    .header { flex-direction: column; gap: 10px; padding: 12px 15px; }
+    .header-left { flex-direction: column; text-align: center; gap: 10px; }
+    .header-title { font-size: 28px; }
+    .logo-unhas, .logo-ikatek { height: 40px; }
+
+    .menu-card { padding: 20px; }
+    .menu-btn { min-width: 200px; padding: 12px 20px; font-size: 14px; }
+}
+
+@media (max-width: 480px) {
+    .header { padding: 10px 12px; }
+    .header-title { font-size: 24px; }
+    .menu-btn { min-width: 180px; padding: 10px 16px; font-size: 13px; }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .header-left {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .header-title {
+        font-size: 22px;
+    }
+
+    .logo-unhas,
+    .logo-ikatek {
+        height: 45px;
+    }
+
+    .tagline h2 {
+        font-size: 24px;
+    }
+
+    .menu-card {
+        padding: 30px 20px;
+    }
+
+    .menu-title {
+        font-size: 28px;
+    }
+
+    .button-row {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .menu-btn {
+        min-width: 250px;
+        font-size: 14px;
+        padding: 15px 25px;
+    }
+
+    .card-logo {
+        height: 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tagline h2 {
+        font-size: 20px;
+    }
+
+    .menu-title {
+        font-size: 24px;
+    }
+
+    .menu-btn {
+        min-width: 220px;
+        font-size: 13px;
+        padding: 12px 20px;
+    }
+
+    .btn-icon {
+        width: 22px;
+        height: 22px;
+    }
+}

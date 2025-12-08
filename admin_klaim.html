@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>APPROVE DATA ALUMNI</title>
+  <link rel="stylesheet" href="admin_klaim.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <img src="img/logo tidak pecah.png" alt="Logo Unhas" class="logo-unhas">
+      <img src="img/ikatek_terbaru_tanpa_blur-removebg-preview.png" alt="Logo IKATEK" class="logo-ikatek">
+      <h1 class="header-title">Approve Klaim Alumni</h1>
+    </div>
+    <div>
+      <button class="logout-btn" id="logoutBtn">
+        <img src="img/Logout.png" alt="Logout Icon" class="logout-icon"> LOGOUT
+      </button>
+      <button class="back-btn" id="backBtn"></button>
+    </div>
+  </header>
+
+  <nav class="navbar">
+    <button class="navbar-btn" id="menuUtamaBtn"> <img src="img/menu.png" alt="Menu Icon" class="navbar-icon" /> MENU UTAMA</button>
+    <button class="navbar-btn" id="inputDataAlumniBtn"><img src="img/input data.png" alt="Input Icon" class="navbar-icon" /> INPUT DATA ALUMNI</button>
+     <button class="navbar-btn" id="dataAlumniBtn"><img src="img/data alumni.png" alt="Data Icon" class="navbar-icon" /> DATA ALUMNI</button>
+     <button class="navbar-btn" id="infoAlumniBtn"><img src="img/info alumni.png" alt="Info Icon" class="navbar-icon" /> INFO ALUMNI</button>
+    <button class="navbar-btn" id="akunAdminBtn"><img src="img/akun admin.png" alt="Admin Icon" class="navbar-icon" /> AKUN ADMIN</button>
+    <button class="navbar-btn" id="alumniChartBtn"><img src="img/statistik.svg" alt="Statistik Icon" class="navbar-icon"> STATISTIK ALUMNI</button>
+    <button class="navbar-btn active" id="approveBtn"><img src="img/approve.svg" alt="Approve Icon" class="navbar-icon"> APPROVE DATA </button>
+  </nav>
+
+  <div class="container">
+
+    <div class="controls">
+      <div class="search">
+        <input id="q" placeholder="Cari berdasarkan nama atau email...">
+      
+
+    <div class="bottom-buttons">
+      <button class="navbar-btn vertical-btn" id="refreshBottomBtn">Refresh</button>
+      <button class="navbar-btn vertical-btn" id="pendingBottomBtn">Pending</button>
+      <button class="navbar-btn vertical-btn" id="allBottomBtn">Semua</button>
+    </div>
+
+    <div id="klaimList" class="klaim-list">
+      <div class="empty">Memuat daftar klaim...</div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <button class="close" id="closeModal">×</button>
+      <h3>Detail Klaim</h3>
+      <div id="modalBody"></div>
+      <div id="modalActions" class="modal-actions">
+        <button class="action-btn approve" id="modalApproveBtn">Approve</button>
+        <button class="action-btn reject" id="modalRejectBtn">Reject</button>
+        <button class="action-btn delete" id="modalDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+<script src="client.js"></script>
+<script>
+/* ================================
+  AUTH CHECK
+================================ */
+if (!localStorage.getItem('authToken')) {
+  alert('Anda harus login sebagai admin untuk mengakses halaman ini.');
+  window.location.href = 'index.html';
+}
+
+/* ================================
+  ELEMENTS
+================================ */
+const klaimListEl = document.getElementById('klaimList');
+const modal = document.getElementById('modalBackdrop');
+const modalBody = document.getElementById('modalBody');
+
+/* ================================
+  HELPER FUNCTIONS
+================================ */
+function escapeHtml(text) {
+  if (!text) return '';
+  return text.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function isValidUrl(string) {
+  try { new URL(string); return true; } catch { return false; }
+}
+
+/* ================================
+  RENDER LIST
+================================ */
+function renderList(items) {
+  if (!items || items.length === 0) {
+    klaimListEl.innerHTML = '<div class="empty">Tidak ada klaim ditemukan.</div>';
+    return;
+  }
+
+  klaimListEl.innerHTML = '';
+  items.forEach(it => {
+    const card = document.createElement('div');
+    card.className = 'klaim-card';
+
+    const content = document.createElement('div');
+    content.className = 'klaim-content';
+
+    const title = document.createElement('h4');
+    title.className = 'klaim-title';
+    title.textContent = it.nama || it.email || '(no name)';
+
+    const desc = document.createElement('div');
+    desc.className = 'klaim-desc';
+    desc.innerHTML = `
+      <strong>Email:</strong> ${escapeHtml(it.email)}<br>
+      ${it.nim ? `<strong>NIM:</strong> ${escapeHtml(it.nim)}<br>` : ""}
+      <strong>Program Studi/Jurusan:</strong> ${escapeHtml(it.program_studi)}<br>
+      <strong>Tahun Masuk:</strong> ${escapeHtml(String(it.tahun_masuk))}<br>
+      <strong>Tempat Lahir:</strong> ${escapeHtml(it.tempat_lahir)}<br>
+      <strong>Tanggal Lahir:</strong> ${escapeHtml(it.tanggal_lahir)}<br>
+      <strong>Jenis Kelamin:</strong> ${escapeHtml(it.jenis_kelamin)}<br>
+      <strong>Agama:</strong> ${escapeHtml(it.agama)}<br>
+    `;
+
+    const meta = document.createElement('div');
+    meta.className = 'klaim-meta small';
+    const createdDate = new Date(it.created_at || it.createdAt || Date.now());
+    meta.textContent = `Status: ${escapeHtml(it.status)} · Diupload: ${createdDate.toLocaleString()}`;
+
+    content.append(title, desc, meta);
+    card.append(content);
+
+    // buka modal detail
+    card.addEventListener('click', (e) => {
+    if (e.target.closest("button")) return;
+     showDetail(it);   // KIRIM OBJECT LENGKAP
+    });
+
+
+    klaimListEl.append(card);
+  });
+}
+
+/* ================================
+  FETCH DATA
+================================ */
+async function fetchKlaim(status = 'all', q = '') {
+  try {
+    klaimListEl.innerHTML = '<div class="empty">Memuat daftar klaim...</div>';
+    const items = await API.klaimAlumni.getAllRequests(status, q);
+    renderList(items.data || items);
+  } catch (err) {
+    klaimListEl.innerHTML =
+      `<div class="empty">Error memuat klaim: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+let currentUuid = null;
+
+/* ================================
+  DETAIL MODAL (NO API VERSION)
+================================ */
+function showDetail(item) {
+  modal.style.display = 'flex';
+  modalBody.innerHTML = 'Memuat...';
+
+  currentUuid = item.uuid;   // <<<<<<<<<< SOLUSI UTAMA
+
+
+  // langsung ambil program studi dari item
+  const prodiName = item.program_studi || "Tidak tersedia";
+
+  modalBody.innerHTML = `
+    <p><strong>Nama:</strong> ${escapeHtml(item.nama)}</p>
+    <p><strong>Email:</strong> ${escapeHtml(item.email)}</p>
+    <p><strong>NIM:</strong> ${escapeHtml(item.nim || "-")}</p>
+    <p><strong>Program Studi/Jurusan:</strong> ${escapeHtml(prodiName)}</p>
+    <p><strong>Tahun Masuk:</strong> ${escapeHtml(String(item.tahun_masuk))}</p>
+    <p><strong>Tempat Lahir:</strong> ${escapeHtml(item.tempat_lahir)}</p>
+    <p><strong>Tanggal Lahir:</strong> ${escapeHtml(item.tanggal_lahir)}</p>
+    <p><strong>Jenis Kelamin:</strong> ${escapeHtml(item.jenis_kelamin)}</p>
+    <p><strong>Agama:</strong> ${escapeHtml(item.agama)}</p>
+    <p><strong>Diupload:</strong> ${new Date(item.created_at).toLocaleString()}</p>
+  `;
+}
+
+
+/* ================================
+  ACTION BUTTONS
+================================ */
+const modalApproveBtn = document.getElementById('modalApproveBtn');
+  document.getElementById('modalApproveBtn').onclick = () =>
+    currentUuid && confirmAction('approve', currentUuid, modalApproveBtn);
+
+const modalRejectBtn = document.getElementById('modalRejectBtn');
+  document.getElementById('modalRejectBtn').onclick = () =>
+    currentUuid && confirmAction('reject', currentUuid, modalRejectBtn);
+
+const modalDeleteBtn = document.getElementById('modalDeleteBtn');
+  document.getElementById('modalDeleteBtn').onclick = () =>
+    currentUuid && confirmAction('delete', currentUuid, modalDeleteBtn);
+
+/* ================================
+  APPROVE / REJECT / DELETE
+================================ */
+async function confirmAction(type, uuid, btn) {
+  if (!confirm(`Yakin ingin ${type} klaim ini?`)) return;
+
+  btn.disabled = true;
+  btn.textContent = "Proses...";
+
+  try {
+  if (type === 'approve') await API.klaimAlumni.approveRequest(uuid);
+  else if (type === 'reject') await API.klaimAlumni.rejectRequest(uuid);
+  else if (type === 'delete') await API.klaimAlumni.deleteRequest(uuid);
+
+  alert('Operasi berhasil.');
+
+  // 1️⃣ Tutup modal agar backdrop tidak menghalangi klik
+  modal.style.display = 'none';
+
+  // 2️⃣ Reset tombol agar bisa digunakan lagi
+  btn.disabled = false;
+  btn.textContent = type.toUpperCase();
+
+  // Refresh data
+  fetchKlaim('all', document.getElementById('q').value.trim());
+} catch (err) {
+  alert('Gagal: ' + err.message);
+
+  btn.disabled = false;
+  btn.textContent = type.toUpperCase();
+}
+
+}
+
+/* ================================
+  EVENT LISTENER
+================================ */
+//refreshTop.onclick = () => fetchKlaim('all', q.value.trim());
+refreshBottomBtn.onclick = () => fetchKlaim('all', q.value.trim());
+pendingBottomBtn.onclick = () => fetchKlaim('pending', q.value.trim());
+allBottomBtn.onclick = () => fetchKlaim('all', q.value.trim());
+
+// Search debounce
+let to = null;
+q.addEventListener('input', e => {
+  clearTimeout(to);
+  to = setTimeout(() => {
+    fetchKlaim('all', e.target.value.trim());
+  }, 400);
+});
+
+// modal close
+closeModal.onclick = () => modal.style.display = 'none';
+window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+
+// navbar
+menuUtamaBtn.onclick = () => location.href = 'menu_utama.html';
+inputDataAlumniBtn.onclick = () => location.href = 'input_data_alumni.html';
+alumniChartBtn.onclick = () => location.href = 'alumni_chart.html';
+dataAlumniBtn.onclick = () => location.href = 'data_alumni.html';
+infoAlumniBtn.onclick = () => location.href = 'Info_alumni.html';
+akunAdminBtn.onclick = () => location.href = 'data_admin.html';
+
+backBtn.onclick = () => history.back();
+
+logoutBtn.onclick = () => {
+  if (confirm('Yakin ingin logout?')) {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    location.href = 'index.html';
+  }
+};
+
+// load pertama
+fetchKlaim('all');
+</script>
+
+</body>
+</html>

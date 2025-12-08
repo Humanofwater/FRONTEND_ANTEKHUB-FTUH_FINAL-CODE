@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Alumni Statistics Charts - ANTEKHUB FT-UH</title>
+    <link rel="stylesheet" href="alumni_chart.css" />
+    <link rel="stylesheet" href="data_alumni.css" />
+</head>
+
+<body>
+
+    <!-- ===================== HEADER ===================== -->
+    <header class="header">
+        <div class="header-left">
+            <img src="img/logo tidak pecah.png" alt="Logo Unhas" class="logo-unhas" />
+            <img src="img/ikatek_terbaru_tanpa_blur-removebg-preview.png" alt="Logo IKATEK" class="logo-ikatek" />
+            <h1 class="header-title">ANTEKHUB FT-UH</h1>
+        </div>
+
+        <!-- Tombol Logout -->
+        <button class="logout-btn" id="logoutBtn">
+            <img src="img/Logout.png" alt="Logout Icon" class="logout-icon" />
+            LOGOUT
+        </button>
+    </header>
+
+    <nav class="navbar">
+      <button class="navbar-btn" id="menuUtamaBtn">
+        <img src="img/menu.png" alt="Menu Icon" class="navbar-icon">
+        MENU UTAMA
+      </button>
+      <button class="navbar-btn" id="inputDataBtn">
+        <img src="img/input data.png" alt="Input Icon" class="navbar-icon">
+        INPUT DATA ALUMNI
+      </button>
+      
+      <button class="navbar-btn" id="dataAlumniBtn">
+        <img src="img/data alumni.png" alt="Data Icon" class="navbar-icon">
+        DATA ALUMNI
+      </button>
+      <button class="navbar-btn" id="infoAlumniBtn">
+        <img src="img/info alumni.png" alt="Info Icon" class="navbar-icon">
+        INFO ALUMNI
+      </button>
+      <button class="navbar-btn" id="akunAdminBtn">
+        <img src="img/akun admin.png" alt="Admin Icon" class="navbar-icon">
+        AKUN ADMIN
+      </button>
+      <button class="navbar-btn active" id="alumniChartBtn">
+        <img src="img/data alumni.png" alt="Chart Icon" class="navbar-icon">
+        STATISTIK ALUMNI
+      </button>
+        <button class="navbar-btn" id="approveBtn">
+            <img src="img/approve.svg" alt="Approve Icon" class="navbar-icon"> 
+            APPROVE DATA
+        </button>
+    </nav>
+
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <main class="main-content">
+
+        <div class="container">
+            <h1 class="page-title">Statistik Alumni</h1>
+
+            <!-- Filter controls -->
+            <section class="filters-container">
+                <div class="filter-group">
+                    <label>Jenis Kelamin:</label>
+                    <select id="filterGender">
+                        <option value="">Semua</option>
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                        
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterProdi">Program Studi:</label>
+                    <select id="filterProdi">
+                        <option value="">Semua Prodi</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterStrata">Strata:</label>
+                    <select id="filterStrata">
+                        <option value="">Semua Strata</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterTahunMasuk">Tahun Masuk:</label>
+                    <select id="filterTahunMasuk">
+                        <option value="">Semua Tahun</option>
+                    </select>
+                </div>
+            </section>
+
+            <div class="left-group">
+                <div class="chart-container shadowed">
+                    <h2 class="chart-title">Jumlah Alumni per Tahun Masuk</h2>
+                    <canvas id="chartYearOfEntry"></canvas>
+                </div>
+
+                <div class="chart-container shadowed">
+                    <h2 class="chart-title">Jumlah Alumni berdasarkan Jenis Kelamin</h2>
+                    <canvas id="chartByGender"></canvas>
+                </div>
+            </div>
+
+            <div class="center-group">
+                <div class="chart-container shadowed">
+                    <h2 class="chart-title">Jumlah Alumni berdasarkan Program Studi per Tahun Masuk</h2>
+                    <canvas id="chartByProdi"></canvas>
+                </div>
+            </div>
+
+            <div class="right-group">
+                <div class="chart-container shadowed">
+                    <h2 class="chart-title">Jumlah Alumni berdasarkan Strata per Tahun Masuk</h2>
+                    <canvas id="chartByStrata"></canvas>
+                </div>
+
+                <div class="chart-container shadowed">
+                    <h2 class="chart-title">Jumlah Alumni Lulus per Tahun</h2>
+                    <canvas id="chartGraduationYear"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const API_BASE = "https://antekhub.eng.unhas.ac.id/api/alumni/stats";
+
+
+// ================= NAVBAR =================
+document.getElementById('menuUtamaBtn').addEventListener('click', () => {
+    window.location.href = 'menu_utama.html';
+});
+document.getElementById('inputDataBtn').addEventListener('click', () => {
+    window.location.href = 'input_data_alumni.html';
+});
+document.getElementById('alumniChartBtn').addEventListener('click', () => {
+    alert('Anda sudah berada di halaman Statistik Alumni');
+});
+document.getElementById('dataAlumniBtn').addEventListener('click', () => {
+    window.location.href = 'data_alumni.html';
+});
+document.getElementById('infoAlumniBtn').addEventListener('click', () => {
+    window.location.href = 'Info_alumni.html';
+});
+document.getElementById('akunAdminBtn').addEventListener('click', () => {
+    window.location.href = 'data_admin.html';
+});
+document.getElementById('approveBtn').addEventListener('click', () => window.location.href = 'admin_klaim.html');
+
+
+// ================= DATA STRATA & PRODI =================
+const strataData = [
+    {
+        "Strata": "Sarjana",
+        "Program Studi": [
+            { "Nama": "Teknik Sipil" },
+            { "Nama": "Teknik Informatika" },
+            { "Nama": "Teknik Mesin" },
+            { "Nama": "Teknik Elektro" },
+            { "Nama": "Teknik Industri" },
+            { "Nama": "Teknik Perkapalan" },
+            { "Nama": "Teknik Kelautan" },
+            { "Nama": "Teknik Arsitektur" },
+            { "Nama": "Teknik Geologi" },
+            { "Nama": "Teknik Industri" },
+            { "Nama": "Teknik Sistem Perkapalan" },
+            { "Nama": "Teknik Peng. Wilayah Kota" },
+            { "Nama": "Teknik Pertambangan" },
+            { "Nama": "Teknik Lingkungan" },
+            { "Nama": "Teknik Metalurgi" },
+            { "Nama": "Teknik Geodesi" },
+        ]
+    },
+    {
+        "Strata": "Magister",
+        "Program Studi": [
+            { "Nama": "Teknik Sipil" },
+            { "Nama": "Teknik Elektro" },
+            { "Nama": "Teknik Arsitektur" },
+            { "Nama": "Teknik Perkapalan" },
+            { "Nama": "Teknik Geologi" },
+            { "Nama": "Teknik Informatika" },
+            { "Nama": "Teknik Lingkungan" },
+            { "Nama": "Teknik Pertambangan" },
+            { "Nama": "Teknik Mesin" },
+            { "Nama": "Perencanaan Wilayah dan Kota" },
+            { "Nama": "Teknik Industri" }
+        ]
+    },
+    {
+        "Strata": "Doktor",
+        "Program Studi": [
+            { "Nama": "Teknik Sipil" },
+            { "Nama": "Ilmu Arsitektur" },
+            { "Nama": "Tekonolgi Kebumian dan Lingkungan" },
+            { "Nama": "Teknik Elektro" },
+            { "Nama": "Teknik Mesin" },
+        ]
+    },
+    {
+        "Strata": "Insinyur",
+        "Program Studi": [
+            { "Nama": "Profesi Insinyur" }
+        ]
+    },
+    {
+        "Strata": "Profesi Arsitektur",
+        "Program Studi": [
+            { "Nama": "Pendidikan Profesi Arsitek" }
+        ]
+    },
+    {
+        "Strata": "Diploma 3",
+        "Program Studi": []
+    }
+];
+
+
+// ================== FIXED FILTER FORMAT ==================
+function buildQuery(f) {
+    const p = new URLSearchParams();
+
+    // jenis_kelamin → array → join
+    if (f.jenis_kelamin && f.jenis_kelamin.length > 0) {
+        p.append("jenis_kelamin", f.jenis_kelamin.join(","));
+    }
+
+    if (f.strata) p.append("strata", f.strata);
+    if (f.program_studi) p.append("program_studi", f.program_studi);
+    if (f.tahun_masuk) p.append("tahun_masuk", f.tahun_masuk);
+
+    return p.toString();
+}
+
+async function fetchAlumniStats(filters = {}) {
+    try {
+        const query = buildQuery(filters);
+        const url = query ? `${API_BASE}?${query}` : API_BASE;
+        const token = localStorage.getItem("authToken");
+        if (!token) throw new Error("Token tidak ditemukan");
+
+        const res = await fetch(url, {
+            headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+    } catch (err) {
+        console.error("Gagal fetch alumni stats:", err);
+        alert("Gagal mengambil data alumni: " + err.message);
+        return null;
+    }
+}
+
+
+// ================== COLOR HELPERS ==================
+function sortYearKeys(keys) {
+    return keys.filter(k => !isNaN(Number(k))).sort((a,b)=>a-b);
+}
+
+function generateColors(count){
+    const palette = ["#3366CC","#DC3912","#FF9900","#109618","#990099","#3B3EAC","#0099C6","#DD4477","#66AA00","#B82E2E","#316395","#994499","#22AA99","#AAAA11","#6633CC","#E67300","#8B0707","#329262"];
+    return Array.from({length: count}, (_,i)=>palette[i % palette.length]);
+}
+
+
+// ================== CHART HANDLER ==================
+let charts = {};
+function clearCharts(){
+    for (const key in charts) if (charts[key]) charts[key].destroy();
+}
+
+const strataSelect = document.getElementById("filterStrata");
+const prodiSelect = document.getElementById("filterProdi");
+
+function populateStrataOptions() {
+    strataData.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.Strata;
+        option.text = item.Strata;
+        strataSelect.appendChild(option);
+    });
+}
+
+function populateProdiOptions(strata) {
+    while (prodiSelect.options.length > 1) prodiSelect.remove(1);
+
+    const strataItem = strataData.find(s => s.Strata === strata);
+    if (!strataItem) return;
+
+    strataItem["Program Studi"].forEach(prodi => {
+        const opt = document.createElement("option");
+        opt.value = prodi.Nama;
+        opt.text = prodi.Nama;
+        prodiSelect.appendChild(opt);
+    });
+}
+
+function populateTahunMasukOptions(stats, selectedValue = "") {
+    const tahunSelect = document.getElementById("filterTahunMasuk");
+
+    // Hapus opsi lama, kecuali "Semua Tahun"
+    while (tahunSelect.options.length > 1) tahunSelect.remove(1);
+
+    const tahunList = Object.keys(stats.totals.by_tahun_masuk).sort();
+
+    tahunList.forEach(tahun => {
+        const opt = document.createElement("option");
+        opt.value = tahun;
+        opt.text = tahun;
+        tahunSelect.appendChild(opt);
+    });
+    // KEMBALIKAN PILIHAN USER
+    if (selectedValue) tahunSelect.value = selectedValue;
+}
+ // ===== Plugin untuk menampilkan angka di atas balok =====
+const valueLabelPlugin = {
+    id: 'valueLabelPlugin',
+    afterDatasetsDraw(chart, args, pluginOptions) {
+        const { ctx } = chart;
+
+        chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            if (!meta.visible) return;
+
+            meta.data.forEach((bar, index) => {
+                const value = dataset.data[index];
+                if (value === 0 || value === undefined) return;
+
+                ctx.save();
+                ctx.fillStyle = "#000"; // warna angka
+                ctx.font = "bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(value, bar.x, bar.y - 5);
+                ctx.restore();
+            });
+        });
+    }
+};
+// Plugin untuk menampilkan total di tengah pie chart gender
+const centerTotalPlugin = {
+    id: "centerTotal",
+    afterDraw(chart) {
+        if (chart.config.type !== "pie") return;
+
+        const meta = chart.getDatasetMeta(0);
+
+        // Jika tidak ada data sama sekali → STOP supaya tidak error
+        if (!meta || !meta.data || meta.data.length === 0) return;
+
+        const centerPoint = meta.data[0];
+        if (!centerPoint || centerPoint.x === undefined || centerPoint.y === undefined) return;
+
+        const { ctx } = chart;
+        const dataset = chart.data.datasets[0];
+
+        if (!dataset || !dataset.data) return;
+
+        const total = dataset.data.reduce((a, b) => a + b, 0);
+
+        ctx.save();
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 20px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(total, centerPoint.x, centerPoint.y);
+        ctx.restore();
+    }
+};
+// Plugin untuk menampilkan total keseluruhan di atas chart bar
+const totalBarPlugin = {
+    id: "totalBar",
+    afterDatasetsDraw(chart, args, options) {
+        const { ctx } = chart;
+
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+            const meta = chart.getDatasetMeta(datasetIndex);
+            if (!meta.visible) return;
+
+            meta.data.forEach((bar, index) => {
+                const value = dataset.data[index];
+                if (!value) return;
+
+                ctx.save();
+                ctx.fillStyle = "#000";
+                ctx.font = "bold 14px Arial";
+                ctx.textAlign = "center";
+
+                // posisi tepat di atas balok
+                ctx.fillText(value, bar.x, bar.y - 10);
+                ctx.restore();
+            });
+        });
+    }
+};
+
+const totalPerYearPlugin = {
+    id: "totalPerYear",
+    afterDatasetsDraw(chart, args, options) {
+        const { ctx } = chart;
+        const datasets = chart.data.datasets;
+        const labels = chart.data.labels;
+
+        labels.forEach((label, index) => {
+            // Hitung total per tahun (semua prodi)
+            let total = 0;
+            datasets.forEach(ds => {
+                total += ds.data[index] || 0;
+            });
+
+            // Cari bar tertinggi pada kolom tersebut
+            let topY = Infinity;
+            let posX = null;
+
+            datasets.forEach((ds, dsIndex) => {
+                const meta = chart.getDatasetMeta(dsIndex);
+                const bar = meta.data[index];
+                if (!bar) return;
+
+                if (bar.y < topY) {
+                    topY = bar.y;
+                    posX = bar.x;
+                }
+            });
+
+            // Jika tidak ada bar, skip
+            if (topY === Infinity || posX === null) return;
+
+            ctx.save();
+            ctx.fillStyle = "#000";
+            ctx.font = "bold 20px Arial";
+            ctx.textAlign = "center";
+
+            // Tampilkan total tepat di atas balok tertinggi
+            ctx.fillText(total, posX, topY - 15);
+            ctx.restore();
+        });
+    }
+};
+
+
+// ===== WARNA TETAP UNTUK PRODI =====
+const prodiColorMap = {
+    "Teknik Sipil": "#3366CC",
+    "Teknik Informatika": "#DC3912",
+    "Teknik Mesin": "#FF9900",
+    "Teknik Elektro": "#109618",
+    "Teknik Industri": "#990099",
+    "Teknik Perkapalan": "#3B3EAC",
+    "Teknik Kelautan": "#0099C6",
+    "Teknik Arsitektur": "#DD4477",
+    "Teknik Geologi": "#66AA00",
+    "Teknik Sistem Perkapalan": "#B82E2E",
+    "Teknik Peng. Wilayah Kota": "#316395",
+    "Teknik Pertambangan": "#994499",
+    "Teknik Lingkungan": "#22AA99",
+    "Teknik Metalurgi": "#AAAA11",
+    "Teknik Geodesi": "#6633CC",
+    "Perencanaan Wilayah dan Kota": "#E67300",
+    "Profesi Insinyur": "#8B0707",
+    "Pendidikan Profesi Arsitek": "#329262"
+};
+
+// Warna default bila prodi belum diberi warna
+const defaultProdiColor = "#999999";
+
+
+// ===== WARNA TETAP UNTUK STRATA =====
+const strataColorMap = {
+    "Sarjana": "#3366CC",
+    "Magister": "#DC3912",
+    "Doktor": "#FF9900",
+    "Insinyur": "#109618",
+    "Profesi Arsitektur": "#990099",
+    "Diploma 3": "#3B3EAC"
+};
+
+const defaultStrataColor = "#999999";
+let allTahunMasuk = [];
+
+
+// ================== BUILD CHARTS ==================
+async function buildCharts(filters = {}) {
+    const stats = await fetchAlumniStats(filters);
+    if(!stats || !stats.totals) return;
+
+        populateTahunMasukOptions(stats, filters.tahun_masuk);
+
+    clearCharts();
+
+    // chart: tahun masuk
+    const yearLabels = sortYearKeys(Object.keys(stats.totals.by_tahun_masuk));
+    const yearData = yearLabels.map(y=>stats.totals.by_tahun_masuk[y]);
+    charts.chartYearOfEntry = new Chart(document.getElementById("chartYearOfEntry"), {
+    type:"bar",
+    data:{
+        labels:yearLabels,
+        datasets:[{
+            label:"Alumni per Tahun Masuk",
+            data:yearData,
+            backgroundColor:"rgba(54,162,235,0.7)"
+        }]
+    },
+    options:{
+        scales:{
+            x:{ grid:{ display:false } },
+            y:{ grid:{ display:false }, beginAtZero:true }
+        }
+    },
+    plugins: [valueLabelPlugin]
+});
+
+
+
+   // chart: gender (warna konsisten)
+        const genderKeys = Object.keys(stats.totals.by_jenis_kelamin);
+        const genderData = genderKeys.map(k => stats.totals.by_jenis_kelamin[k]);
+
+        // Warna tetap
+        const genderColorMap = {
+            "Laki-laki": "#3366CC", // biru
+            "Perempuan": "#FF9900"  // oranye
+        };
+
+        // Sesuaikan urutan warna sesuai urutan label
+        const genderColors = genderKeys.map(k => genderColorMap[k] || "#999999");
+
+        charts.chartByGender = new Chart(document.getElementById("chartByGender"), {
+    type: "pie",
+    data: {
+        labels: genderKeys,
+        datasets: [{
+            data: genderData,
+            backgroundColor: genderColors
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                position: "bottom"
+            }
+        }
+    },
+    plugins: [valueLabelPlugin], plugins: [centerTotalPlugin]
+});
+
+
+    // breakdown per tahun & prodi
+    const breakdown = stats.breakdown.per_tahun_masuk_prodi_strata;
+    const tahunSet = [...new Set(breakdown.map(d=>d.tahun_masuk))].sort();
+    const prodiSet = [...new Set(breakdown.map(d=>d.program_studi))].sort();
+
+    const prodiDatasets = prodiSet.map((prodi)=>({
+    label: prodi,
+    backgroundColor: prodiColorMap[prodi] || defaultProdiColor,
+    data: tahunSet.map(th=>{
+        const row = breakdown.find(d=>d.tahun_masuk==th && d.program_studi==prodi);
+        return row ? row.total : 0;
+    })
+}));
+
+
+    charts.chartByProdi = new Chart(document.getElementById("chartByProdi"), {
+    type:"bar",
+    data:{
+        labels:tahunSet,
+        datasets:prodiDatasets
+    },
+    options:{
+        scales:{
+            x:{ stacked:true, grid:{ display:false }},
+            y:{ stacked:true, grid:{ display:false }}
+        }
+    },
+    plugins: [valueLabelPlugin], plugins: [totalPerYearPlugin]
+});
+
+
+
+    // chart strata
+    const strataSet = [...new Set(breakdown.map(d=>d.strata))].sort();
+    const strataDatasets = strataSet.map((strata)=>({
+    label: strata,
+    backgroundColor: strataColorMap[strata] || defaultStrataColor,
+    data: tahunSet.map(th =>
+        breakdown
+            .filter(d => d.tahun_masuk==th && d.strata==strata)
+            .reduce((a,b)=>a+b.total,0)
+    )
+}));
+
+
+    charts.chartByStrata = new Chart(document.getElementById("chartByStrata"), {
+    type:"bar",
+    data:{
+        labels:tahunSet,
+        datasets:strataDatasets
+    },
+    options:{
+        scales:{
+            x:{ stacked:true, grid:{ display:false }},
+            y:{ stacked:true, grid:{ display:false }}
+        }
+    },
+    plugins: [valueLabelPlugin]
+});
+
+
+
+    // chart tahun lulus
+    const gradLabels = sortYearKeys(Object.keys(stats.totals.by_tahun_lulus));
+    const gradData = gradLabels.map(y=>stats.totals.by_tahun_lulus[y]);
+    charts.chartGraduationYear = new Chart(document.getElementById("chartGraduationYear"), {
+    type:"bar",
+    data:{
+        labels:gradLabels,
+        datasets:[{
+            label:"Jumlah Alumni Lulus",
+            data:gradData,
+            backgroundColor:"rgba(255,159,64,0.7)"
+        }]
+    },
+    options:{
+        scales:{
+            x:{ grid:{ display:false }},
+            y:{ grid:{ display:false }, beginAtZero:true }
+        }
+    },
+    plugins: [valueLabelPlugin]
+});
+
+
+}
+
+
+// ================== EVENT LISTENER FILTER ==================
+window.addEventListener("DOMContentLoaded", ()=>{
+    populateStrataOptions();
+
+    const filters = {
+        jenis_kelamin: [],     // DEFAULT → array
+        program_studi: "",
+        strata: "",
+        tahun_masuk: ""
+    };
+
+    // STRATA
+    strataSelect.addEventListener("change", ()=>{
+        const selectedStrata = strataSelect.value;
+        populateProdiOptions(selectedStrata);
+        filters.strata = selectedStrata;
+        filters.program_studi = prodiSelect.value;
+        buildCharts(filters);
+    });
+
+    // PRODI
+    prodiSelect.addEventListener("change", ()=>{
+        filters.program_studi = prodiSelect.value;
+        buildCharts(filters);
+    });
+
+    // JENIS KELAMIN — FIX (now using array)
+    document.getElementById("filterGender").addEventListener("change", ()=>{
+        const val = document.getElementById("filterGender").value;
+
+        if (val === "") filters.jenis_kelamin = [];
+        else filters.jenis_kelamin = [val]; // API expects array
+
+        buildCharts(filters);
+    });
+
+    // TAHUN MASUK
+    document.getElementById("filterTahunMasuk").addEventListener("change", ()=>{
+        filters.tahun_masuk = document.getElementById("filterTahunMasuk").value;
+        buildCharts(filters);
+    });
+
+    buildCharts(filters);
+});
+
+// Logout
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("currentUser");
+    window.location.href="index.html";
+});
+</script>
+
+
+
+
+</body>
+</html>
