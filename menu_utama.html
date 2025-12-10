@@ -74,7 +74,10 @@
         // Base URL for the server
         const BASE_URL = 'https://antekhub.eng.unhas.ac.id/api';
 
-
+            console.log = function(){};
+            console.error = function(){};
+            console.warn = function(){};
+            console.info = function(){};
         // Helper function to make HTTP requests
         async function apiRequest(method, endpoint, data = null, includeAuth = true) {
           const url = `${BASE_URL}${endpoint}`;

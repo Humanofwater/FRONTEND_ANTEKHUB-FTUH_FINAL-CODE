@@ -135,7 +135,10 @@
 <script>
 const API_BASE = "https://antekhub.eng.unhas.ac.id/api/alumni/stats";
 
-
+    console.log = function(){};
+    console.error = function(){};
+    console.warn = function(){};
+    console.info = function(){};
 // ================= NAVBAR =================
 document.getElementById('menuUtamaBtn').addEventListener('click', () => {
     window.location.href = 'menu_utama.html';
