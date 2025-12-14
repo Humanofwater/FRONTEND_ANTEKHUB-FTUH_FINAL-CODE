@@ -328,34 +328,17 @@
 
       // Load program studi data from JSON file
       try {
-        const response = await fetch('ANTEKHUB-Server/Data/program_studi.json');
-        if (!response.ok) {
-          throw new Error('Failed to load program_studi.json');
-        }
-        const jsonData = await response.json();
+        const result = await API.programStudi.getAll();
 
-        // Transform JSON data to flat array
-        programStudiData = [];
-        jsonData.forEach(strataGroup => {
-          const strata = strataGroup.Strata;
-          if (strataGroup['Program Studi']) {
-            strataGroup['Program Studi'].forEach(prodi => {
-              programStudiData.push({
-                nama: prodi.Nama,
-                strata: strata
-              });
-            });
-          } else if (strataGroup.Nama) {
-            // For Insinyur and Profesi Arsitektur
-            programStudiData.push({
-              nama: strataGroup.Nama,
-              strata: strata
-            });
-          }
-        });
+        programStudiData = result.data.map(p => ({
+          nama: p.nama,
+          strata: p.strata
+        }));
+
       } catch (err) {
-        console.error("Gagal load program studi JSON:", err);
+        console.error("Gagal load program studi dari API:", err);
       }
+
 
       // Add first education entry by default
       addEducationEntry();
