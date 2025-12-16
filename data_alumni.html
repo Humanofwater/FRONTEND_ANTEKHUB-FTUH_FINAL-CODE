@@ -98,6 +98,11 @@
               <select id="filterLokasi">
                 <option value="">Semua Alamat</option>
               </select>
+              <select id="filterTanggalLulus">
+                <option value="">Semua Tanggal Lulus</option>
+              </select>
+
+
               <button id="sortTerbaru" class="btn-filter">Terbaru Di Update</button>
               <button id="cancelFilter" class="btn-filter">Batal</button>
             </div>
@@ -212,6 +217,8 @@
       const tableBody = document.getElementById('tableBody');
       const filterProdi = document.getElementById('filterProdi');
       const filterAgama = document.getElementById('filterAgama');
+      const filterTanggalLulus = document.getElementById('filterTanggalLulus');
+
       const filterTempatLahir = document.getElementById('filterTempatLahir');
       const filterLokasi = document.getElementById('filterLokasi');
       const sortTerbaru = document.getElementById('sortTerbaru');
@@ -245,30 +252,34 @@
             ? alumni.riwayat_pendidikan[0] 
             : null;
               const transformedData = apiData.map(alumni => {
-    const rp = Array.isArray(alumni.riwayat_pendidikan) && alumni.riwayat_pendidikan.length > 0
-        ? alumni.riwayat_pendidikan[0]
-        : null;
+              const rp = Array.isArray(alumni.riwayat_pendidikan) && alumni.riwayat_pendidikan.length > 0
+                  ? alumni.riwayat_pendidikan[0]
+                  : null;
 
-    const prodi = rp?.program_studi || null;
+              const prodi = rp?.program_studi || null;
 
-    return {
-        uuid: alumni.uuid,
-        Nama: alumni.nama || "",
-        "No Ikatek": alumni.nomor_ikatek || "",
-        Strata: prodi ? prodi.strata || "—" : "—",
-        "Program Studi": prodi ? prodi.nama || "—" : "—",
-        "Tempat Lahir": alumni.tempat_lahir || "",
-        "Tanggal Lahir": alumni.tanggal_lahir
-            ? new Date(alumni.tanggal_lahir).toISOString().split("T")[0]
-            : "",
-        Agama: alumni.agama || "",
-        Alamat: alumni.alamat || "",
-        "No Telp": alumni.no_telp || "",
-        update: alumni.updated_at
-            ? new Date(alumni.updated_at).toISOString().split("T")[0]
-            : "",
-    };
-});
+              // Ambil tahun lulus
+              const tanggalLulus = rp?.tanggal_lulus || "—";
+
+              return {
+                  uuid: alumni.uuid,
+                  Nama: alumni.nama || "",
+                  "No Ikatek": alumni.nomor_ikatek || "",
+                  Strata: prodi ? prodi.strata || "—" : "—",
+                  "Program Studi": prodi ? prodi.nama || "—" : "—",
+                  "Tanggal Lulus": tanggalLulus,
+                  "Tempat Lahir": alumni.tempat_lahir || "",
+                  "Tanggal Lahir": alumni.tanggal_lahir
+                      ? new Date(alumni.tanggal_lahir).toISOString().split("T")[0]
+                      : "",
+                  Agama: alumni.agama || "",
+                  Alamat: alumni.alamat || "",
+                  "No Telp": alumni.no_telp || "",
+                  update: alumni.updated_at
+                      ? new Date(alumni.updated_at).toISOString().split("T")[0]
+                      : "",
+              };
+          });
 
               allData = allData.concat(transformedData);
               page++;
@@ -296,16 +307,17 @@
 
     // Header tetap untuk tabel alumni - field yang diperlukan saja
     const fixedHeaders = [
-  'Nama',
-  'No Ikatek',
-  'Strata',
-  'Program Studi',
-  'Tempat Lahir',
-  'Tanggal Lahir',
-  'Agama',
-  'No Telp',
-  'update'
-];
+      'Nama',
+      'No Ikatek',
+      'Strata',
+      'Program Studi',
+      'Tanggal Lulus',
+      'Tempat Lahir',
+      'Tanggal Lahir',
+      'Agama',
+      'No Telp',
+      'update'
+    ];
 
 
       function renderTable(displayData = filteredData) {
@@ -315,14 +327,22 @@
 
         if (pageData.length > 0) {
           let headerHTML = '<tr>';
-          fixedHeaders.forEach(h => headerHTML += '<th>' + h + '</th>');
-          headerHTML += '<th>Aksi</th></tr>';
+            headerHTML += '<th>No.</th>'; // kolom nomor
+            fixedHeaders.forEach(h => headerHTML += '<th>' + h + '</th>');
+            headerHTML += '<th>Aksi</th></tr>';
+
           tableHead.innerHTML = headerHTML;
 
           let bodyHTML = '';
           pageData.forEach((row, displayIndex) => {
             const originalIndex = data.indexOf(row);
+
+            // nomor urut global (sesuai pagination)
+            const nomor = (currentPage - 1) * itemsPerPage + displayIndex + 1;
+
             bodyHTML += '<tr>';
+            bodyHTML += '<td>' + nomor + '</td>'; // tampilkan nomor
+
             fixedHeaders.forEach(h => {
               // display placeholder when value is missing
               const rawVal = row[h];
@@ -334,7 +354,7 @@
           tableBody.innerHTML = bodyHTML;
         } else {
           tableHead.innerHTML = '';
-          const colspan = fixedHeaders.length + 1; // +1 untuk kolom Aksi
+          const colspan = fixedHeaders.length + 2; // +1 No +1 Aksi
           tableBody.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align:center;">Tidak ada data alumni yang tersimpan.</td></tr>';
         }
         updatePageInfo(displayData.length);
@@ -359,39 +379,49 @@
 
       // Fungsi untuk mengisi filter
       function populateFilters() {
-        if (data.length === 0) return;
+  if (data.length === 0) return;
 
-        const agamaSet = new Set();
-        const tempatLahirSet = new Set();
-        const alamatSet = new Set();
+  const agamaSet = new Set();
+  const tempatLahirSet = new Set();
+  const alamatSet = new Set();
+  const tahunLulusSet = new Set();
 
-        data.forEach(row => {
-          if (row.Agama) agamaSet.add(row.Agama);
-          if (row['Tempat Lahir']) tempatLahirSet.add(row['Tempat Lahir']);
-          if (row.Alamat) alamatSet.add(row.Alamat);
-        });
+  data.forEach(row => {
+    if (row.Agama) agamaSet.add(row.Agama);
+    if (row['Tempat Lahir']) tempatLahirSet.add(row['Tempat Lahir']);
+    if (row.Alamat) alamatSet.add(row.Alamat);
 
-        // Isi filter Agama
-        filterAgama.innerHTML = '<option value="">Semua Agama</option>';
-        Array.from(agamaSet).sort().forEach(agama => {
-          filterAgama.innerHTML += '<option value="' + agama + '">' + agama + '</option>';
-        });
+    // 🔥 Ambil TAHUN dari tanggal lulus
+    if (row["Tanggal Lulus"] && row["Tanggal Lulus"] !== "—") {
+      const tahun = row["Tanggal Lulus"].split("-")[0];
+      tahunLulusSet.add(tahun);
+    }
+  });
 
-        // Isi filter Tempat Lahir
-        filterTempatLahir.innerHTML = '<option value="">Semua Tempat Lahir</option>';
-        Array.from(tempatLahirSet).sort().forEach(tempat => {
-          filterTempatLahir.innerHTML += '<option value="' + tempat + '">' + tempat + '</option>';
-        });
+  // Agama
+  filterAgama.innerHTML = '<option value="">Semua Agama</option>';
+  [...agamaSet].sort().forEach(v =>
+    filterAgama.innerHTML += `<option value="${v}">${v}</option>`
+  );
 
-        // Isi filter Alamat
-        filterLokasi.innerHTML = '<option value="">Semua Alamat</option>';
-        Array.from(alamatSet).sort().forEach(alamat => {
-          filterLokasi.innerHTML += '<option value="' + alamat + '">' + alamat + '</option>';
-        });
+  // Tempat lahir
+  filterTempatLahir.innerHTML = '<option value="">Semua Tempat Lahir</option>';
+  [...tempatLahirSet].sort().forEach(v =>
+    filterTempatLahir.innerHTML += `<option value="${v}">${v}</option>`
+  );
 
-        // Hide strata filter since it's not used
-        //filterProdi.style.display = 'none';
-      }
+  // Alamat
+  filterLokasi.innerHTML = '<option value="">Semua Alamat</option>';
+  [...alamatSet].sort().forEach(v =>
+    filterLokasi.innerHTML += `<option value="${v}">${v}</option>`
+  );
+
+  // 🔥 Tahun Lulus
+  filterTanggalLulus.innerHTML = '<option value="">Semua Tahun Lulus</option>';
+  [...tahunLulusSet].sort((a, b) => b - a).forEach(tahun =>
+    filterTanggalLulus.innerHTML += `<option value="${tahun}">${tahun}</option>`
+  );
+}
 
       // Fungsi untuk menerapkan filter
       function applyFilters() {
@@ -519,7 +549,10 @@
 
       function editRow(index, button) {
         const row = button.closest('tr');
-        const cells = row.querySelectorAll('td:not(.aksi)');
+        const cells = row.querySelectorAll(
+          'td:not(.aksi):not(:nth-child(6))'
+        );
+
 
         cells.forEach((td) => {
           td.setAttribute('contenteditable', 'true');
@@ -531,15 +564,18 @@
 
       async function saveRow(index, button) {
   const row = button.closest('tr');
-  const cells = row.querySelectorAll('td:not(.aksi)');
 
-  // Ambil nilai hasil edit
+  // ⛔ Skip kolom No (td pertama)
+  const cells = row.querySelectorAll('td:not(.aksi)');
+  const dataCells = Array.from(cells).slice(1); // ⬅️ PENTING
+
+  // Ambil nilai sesuai header
   const updatedFrontend = {};
   fixedHeaders.forEach((h, i) => {
-    updatedFrontend[h] = cells[i].textContent.trim();
+    updatedFrontend[h] = dataCells[i]?.textContent.trim() || "";
   });
 
-  // Mapping frontend -> backend
+  // Mapping ke backend (SUDAH BENAR)
   const backendData = {
     nama: updatedFrontend["Nama"],
     nomor_ikatek: updatedFrontend["No Ikatek"],
@@ -551,10 +587,8 @@
   };
 
   try {
-    // Update ke backend
     await alumni.updateAlumni(data[index].uuid, backendData);
 
-    // Update ke data lokal
     Object.assign(data[index], updatedFrontend);
     data[index].update = new Date().toISOString().split('T')[0];
 
